@@ -72,8 +72,8 @@ public class RoomDAODB implements RoomDao {
         final String DELETE_MEETING_BY_ROOM = "DELETE FROM meeting WHERE roomID = ?";
         jdbc.update(DELETE_MEETING_BY_ROOM, id);
         
-        final String DELETE_ROOM_BY_ID = "DELETE FROM room WHERE id = ?";
-        jdbc.update(DELETE_ROOM_BY_ID, id);
+        final String DELETE_ROOM = "DELETE FROM room WHERE id = ?";
+        jdbc.update(DELETE_ROOM, id);
     }
 
     public static final class RoomMapper implements RowMapper<Room> {
