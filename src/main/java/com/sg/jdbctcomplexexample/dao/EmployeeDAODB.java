@@ -52,6 +52,8 @@ public class EmployeeDAODB implements EmployeeDao {
                 employee.getLastName());
         
         int newID = jdbc.queryForObject("SELECT LAST_INSERT_ID()", Integer.class);
+        employee.setId(newID);
+        return employee;
     }
 
     @Override
