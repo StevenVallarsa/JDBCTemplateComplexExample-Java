@@ -5,12 +5,14 @@ import com.sg.jdbctcomplexexample.entity.Meeting;
 import com.sg.jdbctcomplexexample.entity.Room;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  *
@@ -57,28 +59,68 @@ public class MeetingDaoDB implements MeetingDao {
     }
 
     @Override
+    @Transactional
     public Meeting addMeeting(Meeting meeting) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        final String INSERT_MEETING = "INSERT INTO meeting (name, time, roomID) VALUES(?,?,?)";
+        jdbc.update(INSERT_MEETING, 
+                meeting.getName(), 
+                Timestamp.valueOf(meeting.getTime()), 
+                meeting.getRoom().getId());
+        int newId = jdbc.queryForObject("SELECT LAST_INSERT_ID()", Integer.class);
+        meeting.setId(newId);
+        insertMeetingEmployee(meeting);
+        return meeting;
+    }
+    
+    private void insertMeetingEmployee(Meeting meeting) {
+        final String INSERT_MEETING_EMPLOYEE = "INSERT INTO meeting_employee (meetingID, employeeID) VALUES(?,?)";
+        for(Employee employee : meeting.getAttendees()) {
+            jdbc.update(INSERT_MEETING_EMPLOYEE, 
+                meeting.getId(), 
+                employee.getId());
+        }
     }
 
     @Override
+    @Transactional
     public void updateMeeting(Meeting meeting) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        final String UPDATE_MEETING = "UPDATE meeting SET name = ?, time = ?, roomID = ? WHERE id = ?";
+        jdbc.update(UPDATE_MEETING, 
+                meeting.getName(),
+                Timestamp.valueOf(meeting.getTime()),
+                meeting.getRoom().getId(),
+                meeting.getId());
+        
+        final String DELETE_MEETING_EMPLOYEE = "DELETE FROM meeting_employee WHERE meetingID = ?";
+        jdbc.update(UPDATE_MEETING, meeting.getId());
+        insertMeetingEmployee(meeting);
+        
     }
 
     @Override
+    @Transactional
     public void deleteMeetingById(int id) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        final String DELETE_MEETING_EMPLOYEE = "DELETE FROM meeting_employee WHERE meetingID = ?";
+        jdbc.update(DELETE_MEETING_EMPLOYEE, id);
+        
+        final String DELETE_MEETING = "DELETE FROM meeting WHERE id = ?";
+        jdbc.update(DELETE_MEETING, id);
     }
 
     @Override
     public List<Meeting> getMeetingsForRoom(Room room) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        final String SELECT_MEETING_FOR_ROOM = "SELECT * FROM meting WHERE roomID = ?";
+        List<Meeting> meetings = jdbc.query(SELECT_MEETING_FOR_ROOM, new MeetingMapper(), room.getId());
+        addRoomAndEmployeeToMeeting(meetings);
+        return meetings;
     }
 
     @Override
     public List<Meeting> getMeetingsForEmployee(Employee employee) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        final String SELECT_MEETINGS_FOR_EMPLOYEES = "SELECT m.* FROM meeting m JOIN meeting_employee me ON m.id = me.meetingID WHERE me.employeeID = ?";
+        List<Meeting> meetings = jdbc.query(SELECT_MEETINGS_FOR_EMPLOYEES, new MeetingMapper(), employee.getId());
+        addRoomAndEmployeeToMeeting(meetings);
+        return meetings;
     }
 
     private void addRoomAndEmployeeToMeeting(List<Meeting> meetings) {
