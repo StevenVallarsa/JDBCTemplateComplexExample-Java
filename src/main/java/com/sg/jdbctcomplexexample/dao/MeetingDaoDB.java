@@ -92,7 +92,7 @@ public class MeetingDaoDB implements MeetingDao {
                 meeting.getId());
         
         final String DELETE_MEETING_EMPLOYEE = "DELETE FROM meeting_employee WHERE meetingID = ?";
-        jdbc.update(UPDATE_MEETING, meeting.getId());
+        jdbc.update(DELETE_MEETING_EMPLOYEE, meeting.getId());
         insertMeetingEmployee(meeting);
         
     }
@@ -109,7 +109,7 @@ public class MeetingDaoDB implements MeetingDao {
 
     @Override
     public List<Meeting> getMeetingsForRoom(Room room) {
-        final String SELECT_MEETING_FOR_ROOM = "SELECT * FROM meting WHERE roomID = ?";
+        final String SELECT_MEETING_FOR_ROOM = "SELECT * FROM meeting WHERE roomID = ?";
         List<Meeting> meetings = jdbc.query(SELECT_MEETING_FOR_ROOM, new MeetingMapper(), room.getId());
         addRoomAndEmployeeToMeeting(meetings);
         return meetings;

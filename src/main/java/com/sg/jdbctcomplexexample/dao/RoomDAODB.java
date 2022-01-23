@@ -31,7 +31,7 @@ public class RoomDAODB implements RoomDao {
     @Override
     public Room getRoomById(int id) {
         try {
-            final String SELECT_ROOM_BY_ID = "SELECT * FROM room WHERE room = ?";
+            final String SELECT_ROOM_BY_ID = "SELECT * FROM room WHERE id = ?";
             return jdbc.queryForObject(SELECT_ROOM_BY_ID, new RoomMapper(), id);
         } catch (DataAccessException e) {
             return null;
@@ -49,7 +49,7 @@ public class RoomDAODB implements RoomDao {
         final String INSERT_ROOM = "INSERT INTO room (name, description) VALUES (?,?)";
         jdbc.update(INSERT_ROOM, room.getName(), room.getDescription());
 
-        int newId = jdbc.queryForObject("SELECT LAST_INSERTED_ID()", Integer.class);
+        int newId = jdbc.queryForObject("SELECT LAST_INSERT_ID()", Integer.class);
         room.setId(newId);
         return room;
     }
@@ -66,8 +66,7 @@ public class RoomDAODB implements RoomDao {
     @Override
     @Transactional
     public void deleteRoomById(int id) {
-        final String DELETE_MEETING_EMPLOYEE_BY_ROOM = "DELETE FROM me.* FROM meeting_employee JOIN meeting m ON me.meetingID = m.id WHERE m.roomID = ?";
-        jdbc.update(DELETE_MEETING_EMPLOYEE_BY_ROOM, id);
+final String DELETE_MEETING_EMPLOYEE_BY_ROOM = "DELETE me.* FROM meeting_employee me JOIN meeting m ON me.meetingId = m.id WHERE m.roomId = ?";        jdbc.update(DELETE_MEETING_EMPLOYEE_BY_ROOM, id);
         
         final String DELETE_MEETING_BY_ROOM = "DELETE FROM meeting WHERE roomID = ?";
         jdbc.update(DELETE_MEETING_BY_ROOM, id);
